@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ORION — Intelligence System</title>
+  <meta name="description" content="Private local intelligence and profiling system">
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="manifest" href="manifest.json">
+
+</head>
+
+<body>
+
+  <!-- ── PANIC SCREEN (fake notes app) ─────────────────────────────────── -->
+  <div id="panic-screen">
+    <div class="panic-bar">
+      <i data-lucide="file-text" style="width:16px;"></i>
+      <span style="font-weight:bold;">Notizen</span>
+      <span style="margin-left:auto;font-size:12px;opacity:0.6;">Strg+Shift+Z zum Zurückkehren</span>
+    </div>
+    <div class="panic-body">
+      <div class="panic-note">
+        <h2>Einkaufsliste</h2>
+        <p>— Milch<br>— Brot<br>— Butter<br>— Eier (6 Stück)<br>— Jogurt<br>— Äpfel<br>— Kaffee</p>
+        <hr style="margin:16px 0;border-color:#eee;">
+        <h2>Termine</h2>
+        <p>Montag 10:00 — Meeting mit Team<br>Mittwoch 15:00 — Zahnarzt<br>Freitag — Sport</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── LOCK SCREEN ────────────────────────────────────────────────────── -->
+  <div id="lock-screen" style="display:none;">
+    <div class="lock-logo"><i data-lucide="eye" style="width:48px;height:48px;color:var(--cyan);"></i></div>
+    <div class="lock-title">ORION</div>
+    <div class="lock-subtitle">INTELLIGENCE SYSTEM · ZUGANG GESPERRT</div>
+    <div class="lock-pin-row">
+      <div class="lock-pin-dot" id="pd0"></div>
+      <div class="lock-pin-dot" id="pd1"></div>
+      <div class="lock-pin-dot" id="pd2"></div>
+      <div class="lock-pin-dot" id="pd3"></div>
+      <div class="lock-pin-dot" id="pd4"></div>
+      <div class="lock-pin-dot" id="pd5"></div>
+    </div>
+    <div class="lock-numpad">
+      <button class="lock-key" onclick="lockKeyPress('1')">1</button>
+      <button class="lock-key" onclick="lockKeyPress('2')">2</button>
+      <button class="lock-key" onclick="lockKeyPress('3')">3</button>
+      <button class="lock-key" onclick="lockKeyPress('4')">4</button>
+      <button class="lock-key" onclick="lockKeyPress('5')">5</button>
+      <button class="lock-key" onclick="lockKeyPress('6')">6</button>
+      <button class="lock-key" onclick="lockKeyPress('7')">7</button>
+      <button class="lock-key" onclick="lockKeyPress('8')">8</button>
+      <button class="lock-key" onclick="lockKeyPress('9')">9</button>
+      <button class="lock-key" style="font-size:14px;" onclick="lockKeyPress('del')">⌫</button>
+      <button class="lock-key" onclick="lockKeyPress('0')">0</button>
+      <button class="lock-key" style="font-size:12px;color:var(--cyan);" onclick="lockKeyPress('ok')">↵</button>
+    </div>
+    <div id="lock-error" class="lock-error" style="display:none;"></div>
+    <div class="lock-hint">Beim ersten Start: PIN eingeben zum Festlegen<br>Ohne PIN: 6× tippen</div>
+  </div>
+
+  <!-- ── SCANLINE OVERLAY ───────────────────────────────────────────────── -->
+  <div class="scanline-overlay"></div>
+
+  <!-- ── MAIN APP ───────────────────────────────────────────────────────── -->
+  <div id="app">
+
+    <!-- LEFT SIDEBAR -->
+    <nav id="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-icon"><img src="assets/logo.png"
+            style="width:100%;height:100%;border-radius:8px;object-fit:cover;"></div>
+        <div>
+          <div class="logo-text">ORION</div>
+          <div class="logo-sub">Intelligence</div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Übersicht</div>
+        <div class="nav-item active" data-route="dashboard" onclick="navigate('dashboard')">
+          <div class="nav-icon"><i data-lucide="layout-dashboard"></i></div> Dashboard
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Personen</div>
+        <div class="nav-item" data-route="persons" onclick="navigate('persons')">
+          <div class="nav-icon"><i data-lucide="users"></i></div> Datenbank
+        </div>
+        <div class="nav-item" data-route="network" onclick="navigate('network')">
+          <div class="nav-icon"><i data-lucide="network"></i></div> Netzwerk
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Intelligence</div>
+        <div class="nav-item" data-route="risks" onclick="navigate('risks')">
+          <div class="nav-icon"><i data-lucide="alert-triangle"></i></div> Risiken <span class="nav-badge"
+            id="risk-badge" style="display:none;">0</span>
+        </div>
+        <div class="nav-item" data-route="ai" onclick="navigate('ai')">
+          <div class="nav-icon"><i data-lucide="bot"></i></div> KI-Analyse
+        </div>
+        <div class="nav-item" data-route="archive" onclick="navigate('archive')">
+          <div class="nav-icon"><i data-lucide="archive"></i></div> Archiv
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">System</div>
+        <div class="nav-item" data-route="settings" onclick="navigate('settings')">
+          <div class="nav-icon"><i data-lucide="settings"></i></div> Einstellungen
+        </div>
+        <div class="nav-item" onclick="document.dispatchEvent(new KeyboardEvent('keydown',{ctrlKey:true,key:'k'}))">
+          <div class="nav-icon"><i data-lucide="search"></i></div> Suchen <span
+            style="margin-left:auto;font-size:9px;color:var(--text-muted);font-family:var(--font-mono);">Ctrl+K</span>
+        </div>
+        <div class="nav-item"
+          onclick="document.dispatchEvent(new KeyboardEvent('keydown',{ctrlKey:true,shiftKey:true,key:'X'}))">
+          <div class="nav-icon"><i data-lucide="lock"></i></div> Panic <span
+            style="margin-left:auto;font-size:9px;color:var(--text-muted);font-family:var(--font-mono);">⌃⇧X</span>
+        </div>
+      </div>
+
+      <div class="sidebar-bottom">
+        <div class="sidebar-status">
+          <div class="status-dot"></div>
+          <span>System online · Lokal</span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- MAIN WORKSPACE -->
+    <main id="workspace">
+      <div class="workspace-header">
+        <div class="workspace-title">
+          <button class="btn btn-icon mobile-only" id="btn-mobile-menu" style="display:none;margin-right:10px;"><i
+              data-lucide="menu"></i></button>
+          <span id="workspace-title-text"
+            style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px;"><i
+              data-lucide="layout-dashboard" style="width:16px;margin-right:6px;vertical-align:text-bottom;"></i>
+            Dashboard</span>
+        </div>
+        <div class="workspace-actions">
+          <button class="btn btn-icon mobile-only" id="btn-mobile-intel" style="display:none;"
+            data-tooltip="Intel Feed"><i data-lucide="zap"></i></button>
+          <button class="btn btn-icon" id="btn-global-search" data-tooltip="Suchen (Ctrl+K)"><i
+              data-lucide="search"></i></button>
+          <button class="btn btn-primary btn-sm" id="btn-header-add"
+            onclick="import('./js/persons.js').then(m=>m.openPersonModal(null,()=>navigate('persons')))">
+            <i data-lucide="plus" style="width:14px;"></i> <span class="hide-on-mobile">Person</span>
+          </button>
+          <button class="btn btn-icon hide-on-mobile" onclick="navigate('settings')" data-tooltip="Einstellungen"><i
+              data-lucide="settings"></i></button>
+        </div>
+      </div>
+      <div class="workspace-body" id="workspace-body">
+        <!-- Dynamic content rendered by router -->
+        <div class="empty-state">
+          <div class="empty-icon"><i data-lucide="eye" style="width:40px;height:40px;opacity:0.5;"></i></div>
+          <div class="empty-text" style="font-family:var(--font-mono);">Initialisiere ORION...</div>
+        </div>
+      </div>
+    </main>
+
+    <!-- RIGHT PANEL -->
+    <aside id="right-panel">
+      <div class="right-panel-header">
+        <i data-lucide="zap" style="width:14px;color:var(--gold);"></i> Intel Feed
+      </div>
+      <div class="right-panel-tabs">
+        <div class="rp-tab active" data-rp="warnings" id="rp-tab-warnings">Warnungen</div>
+        <div class="rp-tab" data-rp="notes" id="rp-tab-notes">Notizen</div>
+      </div>
+      <div class="right-panel-body">
+        <!-- Warnings Tab -->
+        <div id="rp-warnings">
+          <div style="text-align:center;color:var(--text-muted);padding:20px;font-size:12px;">Laden...</div>
+        </div>
+        <!-- Quick Notes Tab -->
+        <div id="rp-notes" style="display:none;">
+          <textarea id="quick-notes-area" class="form-textarea"
+            style="width:100%;height:300px;font-size:12px;background:transparent;border:none;resize:none;outline:none;padding:0;"
+            placeholder="Schnellnotizen..."></textarea>
+          <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:8px;" id="btn-save-notes">💾
+            Speichern</button>
+        </div>
+      </div>
+
+      <!-- Person Quick Stats (shown when viewing a person) -->
+      <div id="rp-person-quick" style="padding:12px;border-top:1px solid var(--border);display:none;">
+        <!-- Populated dynamically -->
+      </div>
+    </aside>
+
+    <!-- MOBILE OVERLAY -->
+    <div id="mobile-overlay" class="mobile-overlay"></div>
+
+  </div>
+
+  <!-- ── SCRIPTS ──────────────────────────────────────────────────────────── -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script type="module" src="js/app.js"></script>
+  <script>
+    // Right panel tab switching
+    lucide.createIcons();
+    document.querySelectorAll('.rp-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.rp-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const target = tab.dataset.rp;
+        document.getElementById('rp-warnings').style.display = target === 'warnings' ? 'block' : 'none';
+        document.getElementById('rp-notes').style.display = target === 'notes' ? 'block' : 'none';
+      });
+    });
+
+    // Quick notes persistence
+    const notes = localStorage.getItem('orion_quick_notes') || '';
+    document.getElementById('quick-notes-area').value = notes;
+    document.getElementById('btn-save-notes')?.addEventListener('click', () => {
+      localStorage.setItem('orion_quick_notes', document.getElementById('quick-notes-area').value);
+      document.getElementById('btn-save-notes').textContent = '✓ Gespeichert';
+      setTimeout(() => document.getElementById('btn-save-notes').textContent = '💾 Speichern', 1500);
+    });
+
+    // Keyboard shortcut: lock
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'l' && e.ctrlKey && e.shiftKey) {
+        import('./js/security.js').then(s => s.lock());
+      }
+    });
+
+    // Update risk badge
+    async function updateRiskBadge() {
+      try {
+        const all = JSON.parse(await new Promise(resolve => {
+          const req = indexedDB.open('orion_intelligence');
+          req.onsuccess = e => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains('persons')) return resolve('[]');
+            const tx = db.transaction('persons', 'readonly');
+            const store = tx.objectStore('persons');
+            store.getAll().onsuccess = r => resolve(JSON.stringify(r.result));
+          };
+          req.onerror = () => resolve('[]');
+        }));
+        const count = all.filter(p => ['kritisch', 'hoch'].includes(p.riskLevel)).length;
+        const badge = document.getElementById('risk-badge');
+        if (badge) {
+          badge.textContent = count;
+          badge.style.display = count > 0 ? 'inline' : 'none';
+        }
+      } catch (e) { }
+    }
+    setTimeout(updateRiskBadge, 1000);
+    setInterval(updateRiskBadge, 30000);
+
+    // Mobile Menu Toggles
+    const btnMenu = document.getElementById('btn-mobile-menu');
+    const btnIntel = document.getElementById('btn-mobile-intel');
+    const overlay = document.getElementById('mobile-overlay');
+    const sidebar = document.getElementById('sidebar');
+    const rightPanel = document.getElementById('right-panel');
+
+    function closeMobilePanels() {
+      sidebar?.classList.remove('open');
+      rightPanel?.classList.remove('open');
+      overlay?.classList.remove('active');
+    }
+
+    btnMenu?.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+      rightPanel.classList.remove('open');
+      overlay.classList.toggle('active', sidebar.classList.contains('open'));
+    });
+
+    btnIntel?.addEventListener('click', () => {
+      rightPanel.classList.toggle('open');
+      sidebar.classList.remove('open');
+      overlay.classList.toggle('active', rightPanel.classList.contains('open'));
+    });
+
+    overlay?.addEventListener('click', closeMobilePanels);
+
+    // Close panels when clicking nav items
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', closeMobilePanels);
+    });
+  </script>
+</body>
+
+</html>

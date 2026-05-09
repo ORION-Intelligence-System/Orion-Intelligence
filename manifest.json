@@ -1,0 +1,32 @@
+{
+    "name": "Orion ",
+    "short_name": "Orion",
+    "start_url": "index.html",
+    "display": "standalone",
+    "background_color": "#000000",
+    "theme_color": "#000000",
+    "icons": [
+        {
+            "src": "logo.png",
+            "type": "image/png",
+            "sizes": "750x750"
+        },
+        {
+            "src": "logo.png",
+            "type": "image/png",
+            "sizes": "192x192"
+        },
+        {
+            "src": "logo.png",
+            "type": "image/png",
+            "sizes": "512x512"
+        }
+    ],
+    "splash_pages": [
+        {
+            "src": "logo.png",
+            "background_color": "#000000",
+            "theme_color": "#000000"
+        }
+    ]
+}
