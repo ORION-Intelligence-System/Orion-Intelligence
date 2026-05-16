@@ -7,6 +7,7 @@
   <title>ORION — Intelligence System</title>
   <meta name="description" content="Private local intelligence and profiling system">
   <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="manifest" href="manifest.json">
 
 </head>
@@ -94,6 +95,12 @@
         <div class="nav-item" data-route="network" onclick="navigate('network')">
           <div class="nav-icon"><i data-lucide="network"></i></div> Netzwerk
         </div>
+        <div class="nav-item" data-route="map" onclick="navigate('map')">
+          <div class="nav-icon"><i data-lucide="map"></i></div> Karte
+        </div>
+        <div class="nav-item" data-route="timeline" onclick="navigate('timeline')">
+          <div class="nav-icon"><i data-lucide="history"></i></div> Zeitachse
+        </div>
       </div>
 
       <div class="sidebar-section">
@@ -104,9 +111,6 @@
         </div>
         <div class="nav-item" data-route="ai" onclick="navigate('ai')">
           <div class="nav-icon"><i data-lucide="bot"></i></div> KI-Analyse
-        </div>
-        <div class="nav-item" data-route="archive" onclick="navigate('archive')">
-          <div class="nav-icon"><i data-lucide="archive"></i></div> Archiv
         </div>
       </div>
 
@@ -205,6 +209,7 @@
   <!-- ── SCRIPTS ──────────────────────────────────────────────────────────── -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script type="module" src="js/app.js"></script>
   <script>
     // Right panel tab switching
