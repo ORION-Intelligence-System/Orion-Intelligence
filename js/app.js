@@ -72,6 +72,8 @@ async function renderDashboard() {
       <div style="display:flex;gap:10px;flex-wrap:wrap;">
         <button class="btn btn-primary" id="qs-add-person"><i data-lucide="user-plus" style="width:14px;"></i> Person hinzufügen</button>
         <button class="btn btn-primary" id="qs-export-all" style="background:#6a00ff;color:white;border:none;"><i data-lucide="folder-output" style="width:14px;"></i> Globaler Export (ZIP)</button>
+        <button class="btn btn-primary" id="qs-import-all" style="background:#007a5a;color:white;border:none;"><i data-lucide="folder-input" style="width:14px;"></i> Daten importieren</button>
+        <input type="file" id="dash-import-file" accept=".json,.zip" style="display:none;">
         <button class="btn btn-ghost" onclick="navigate('network')"><i data-lucide="network" style="width:14px;"></i> Netzwerk anzeigen</button>
         <button class="btn btn-ghost" id="qs-search"><i data-lucide="search" style="width:14px;"></i> Suchen (Ctrl+K)</button>
         <button class="btn btn-gold" onclick="navigate('settings')"><i data-lucide="settings" style="width:14px;"></i> Einstellungen</button>
@@ -86,6 +88,18 @@ async function renderDashboard() {
   document.getElementById('qs-search')?.addEventListener('click', () => {
     import('./search.js').then(m => m.initSearch());
     document.dispatchEvent(new KeyboardEvent('keydown', { ctrlKey: true, key: 'k' }));
+  });
+
+  // Dashboard Import
+  document.getElementById('qs-import-all')?.addEventListener('click', () => {
+    document.getElementById('dash-import-file').click();
+  });
+  document.getElementById('dash-import-file')?.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const { importDataFile } = await import('./data-transfer.js');
+    await importDataFile(file, () => renderDashboard());
+    e.target.value = ''; // reset for re-use
   });
 
   document.getElementById('qs-export-all')?.addEventListener('click', async () => {
@@ -138,11 +152,14 @@ async function renderDashboard() {
       }
       
       const backupData = {
+        _orionExport: true,
+        _version: 1,
+        _type: 'global',
+        _exportedAt: new Date().toISOString(),
         persons,
         interactions: allInteractions,
         relationships: allRels,
         files: allFiles,
-        exportedAt: new Date().toISOString(),
       };
       zip.file('orion_backup.json', JSON.stringify(backupData, null, 2));
       
@@ -240,28 +257,9 @@ async function renderSettings() {
   document.getElementById('import-file').onchange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    try {
-      let data;
-      if (file.name.endsWith('.zip')) {
-        const JSZip = window.JSZip;
-        if (!JSZip) throw new Error("JSZip Bibliothek nicht geladen.");
-        const zip = await JSZip.loadAsync(file);
-        const backupFile = zip.file("orion_backup.json");
-        if (!backupFile) throw new Error("Keine 'orion_backup.json' im ZIP gefunden.");
-        const text = await backupFile.async("string");
-        data = JSON.parse(text);
-      } else {
-        const text = await file.text();
-        data = JSON.parse(text);
-      }
-      const { put } = await import('./db.js');
-      for (const p of data.persons || []) await put('persons', p);
-      for (const i of data.interactions || []) await put('interactions', i);
-      for (const r of data.relationships || []) await put('relationships', r);
-      for (const f of data.files || []) await put('files', f);
-      playSave();
-      showToast(`Import: ${data.persons?.length||0} Personen`, 'cyan');
-    } catch(err) { showToast('Import fehlgeschlagen: ' + err.message, 'red'); }
+    const { importDataFile } = await import('./data-transfer.js');
+    await importDataFile(file, () => renderSettings());
+    e.target.value = '';
   };
   document.getElementById('btn-clear-data').onclick = async () => {
     if (!confirm('ALLE DATEN löschen? Das kann nicht rückgängig gemacht werden!')) return;
