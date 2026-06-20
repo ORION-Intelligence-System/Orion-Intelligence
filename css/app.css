@@ -1778,4 +1778,73 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
   .person-filters .btn {
     width: 100% !important;
   }
+  .network-controls {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .network-controls input,
+  .network-controls select {
+    flex: 1;
+    min-width: 0;
+  }
 }
+
+@keyframes map-pulse {
+  0% { transform: scale(0.5); opacity: 1; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+.map-pulse-container {
+  position: relative;
+  width: 40px;
+  height: 40px;
+}
+.map-pulse-ring {
+  border: 3px solid var(--cyan);
+  border-radius: 50%;
+  height: 40px;
+  width: 40px;
+  position: absolute;
+  left: -20px;
+  top: -20px;
+  animation: map-pulse 1.8s ease-out infinite;
+  box-shadow: 0 0 8px var(--cyan);
+  pointer-events: none;
+}
+.map-pulse-dot {
+  width: 12px;
+  height: 12px;
+  background: var(--cyan);
+  border: 2px solid white;
+  border-radius: 50%;
+  position: absolute;
+  left: -6px;
+  top: -6px;
+  box-shadow: 0 0 6px rgba(0,0,0,0.8);
+}
+
+/* ─── Alibi Prüfer ──────────────────────────────────────────────────────── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.alibi-conflict-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.alibi-conflict-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+#alibi-panel {
+  transition: border-color 0.2s ease;
+}
+#alibi-panel:hover {
+  border-color: var(--red) !important;
+}
+
+#alibi-body {
+  transition: max-height 0.35s ease;
+}
+
